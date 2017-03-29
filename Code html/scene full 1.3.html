@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Assignment CG</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/stats.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+
+    <script type="text/javascript" src="../libs/OBJLoader.js"></script>
+    <script type="text/javascript" src="../libs/MTLLoader.js"></script>
+    <script type="text/javascript" src="../libs/OBJMTLLoader.js"></script>
+
+    <script type="text/javascript" src="../libs/chroma.js"></script>
+  
+    <script type="text/javascript" src="../libs/ControlCamera.js"></script>
+
+    <script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
+    <script type="text/javascript" src="../libs/jquery.ui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="../css/my_css.css">
+
+    <style>
+        body{
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body onkeydown ="return myFunction(event)">
+<div id = "Staffproperties">
+	<form name='staff'>
+		<fieldset>
+		    <legend>Staff properties</legend>
+            <div class = "lengend">
+                <div id="defaultval_LR" class = "rangetitle"> Left - Right <span class = "slider_value "id="currentval_LR">0</span> </div>
+                <div id="defaultslide_LR" class ="rangeslider"></div>
+                        <br>
+                <div id="defaultval_UD" class = "rangetitle"> Up - Down <span id="currentval_UD">0</span> </div>
+                <div id="defaultslide_UD" class ="rangeslider"></div>
+            </div>
+		</fieldset>
+	</form>
+</div>
+<div id = "Camera_Properties">
+	<form name='camera'>
+		<fieldset>
+    		<legend>Camera Properties </legend>
+            <div class = "lengend">
+                <div id="defaultval1_LR" class = "rangetitle"> Left - Right <span class = "slider_value "id="currentval1_LR">0</span> </div>
+                <div id="defaultslide1_LR" class ="rangeslider"></div>
+                        <br>
+                <div id="defaultval1_UD" class = "rangetitle"> Up - Down <span id="currentval1_UD">0</span> </div>
+                <div id="defaultslide1_UD" class ="rangeslider"></div>
+                        <br>
+                <div id="defaultval_zoom" class = "rangetitle"> Zoom <span id="currentval_zoom">0</span> </div>
+                <div id="defaultslide_zoom" class ="rangeslider"></div>
+            </div>
+		</fieldset>
+	</form>
+</div>
+
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output"></div>
+<div id="WebGL-output2"></div>
+<div id="Stats-output"></div>
+
+<!-- Javascript code that runs our Three.js examples -->
+
+<script type="text/javascript">
+	var Height=window.innerHeight/2, Width=window.innerWidth/2-2;
+
+	var cameraHeight=50, cameraWidth=0, Fov=45, Fov1 = 45,  Near=0.01, Far=1000;
+	
+	var Gcamera = [100, 100, 150];
+	
+
+
+    $(function () {
+
+        var stats = initStats();
+        var axes = new THREE.AxisHelper(100);
+        var axes1 = new THREE.AxisHelper(100);
+
+        var scene = new THREE.Scene();
+        scene.add(axes);
+
+        
+        var spotLight = new THREE.SpotLight( 0xffffff );
+        spotLight.position.set( 0, 1000, 1000 );
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+        
+        var clock = new THREE.Clock();
+
+        var camera = new THREE.PerspectiveCamera(Fov, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(Gcamera[0], Gcamera[1], Gcamera[2]);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        var renderer = new THREE.WebGLRenderer();
+            renderer.setClearColorHex(0xEEEEEE);
+            renderer.setSize(Width, Height*1.53);    
+            renderer.shadowMapEnabled = true;
+            scene.add(axes);
+
+        var camControls = new THREE.ControlCamera(camera, renderer.domElement, true);
+            camControls.lookSpeed = 0.4;
+            camControls.movementSpeed = 40;
+            camControls.noFly = true;
+            camControls.lookVertical = true;
+            camControls.constrainVertical = true;
+            camControls.verticalMin = 1.0;
+            camControls.verticalMax = 2.0;
+            camControls.lon = -150;
+            camControls.lat = -120;
+
+
+        /********************************************************************************************/
+        /********************************************************************************************/
+        /**************************            CAMERA 2              ********************************/
+        /********************************************************************************************/
+        /********************************************************************************************/
+        var scene2 = new THREE.Scene();
+        
+
+        var spotLight2 = new THREE.SpotLight( 0xffffff );
+        spotLight2.position.set( 0, 1000, 1000 );
+        spotLight2.castShadow = true;
+        scene2.add( spotLight2 );
+        
+        var clock2 = new THREE.Clock();
+
+        var renderer2 = new THREE.WebGLRenderer();
+            renderer2.setClearColorHex(0xEEEEEE);
+            renderer2.setSize(Width, Height*1.53);    
+            renderer2.shadowMapEnabled = true;
+            scene2.add(axes1);
+
+        var camera2 = new THREE.PerspectiveCamera(Fov1, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera2.position.set(100, 10, 10);
+            camera2.lookAt(new THREE.Vector3(0, 0, 0));
+
+        
+
+        var cam2Controls = new THREE.ControlCamera(camera2, renderer2.domElement, false);
+            cam2Controls.lookSpeed = 0.4;
+            cam2Controls.movementSpeed = 20;
+            cam2Controls.noFly = true;
+            cam2Controls.lookVertical = true;
+            cam2Controls.constrainVertical = true;
+            cam2Controls.verticalMin = 1.0;
+            cam2Controls.verticalMax = 2.0;
+            cam2Controls.lon = 0;
+            cam2Controls.lat = 0;
+
+        
+
+        render();
+
+        $("#WebGL-output").append(renderer.domElement);
+        $("#WebGL-output2").append(renderer2.domElement);
+
+        // speed of cars
+        var step = 2;
+
+        // variable to control car
+        var go_to_right = true
+        function render() {
+            stats.update();
+
+
+
+            var delta1 = clock.getDelta();
+            camControls.update(delta1);
+            renderer.clear();
+
+            var delta2 = clock2.getDelta();
+            cam2Controls.update(delta2);
+            renderer2.clear();
+
+            camera2.fov = Fov1;
+            camera2.updateProjectionMatrix();
+            $('#currentval_zoom').html(Fov1);
+
+			renderer.render(scene, camera);
+			renderer2.render(scene2, camera2);
+            requestAnimationFrame(render);
+            
+        }
+
+        function initStats() {
+
+            var stats = new Stats();
+
+            stats.setMode(0); // 0: fps, 1: ms
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.bottom = '0px';
+
+            $("#Stats-output").append( stats.domElement );
+            return stats;
+        }
+
+
+
+
+        var mesh1;
+        var mesh2;
+
+        var loader1 = new THREE.OBJMTLLoader();
+        var loader2 = new THREE.OBJMTLLoader();
+        loader1.addEventListener('load', function (event) {
+
+            var scale = chroma.scale(['#aaffaa', '#ffff00', '#ffffff']);
+
+            var object = event.content;
+            setRandomColors(object, scale);
+
+            mesh = object;
+            scene.add(mesh);
+        });
+
+        loader2.addEventListener('load', function (event) {
+
+            var scale2 = chroma.scale(['#aaffaa', '#ffff00', '#ffffff']);
+
+            var object2 = event.content;
+            setRandomColors(object2, scale2);
+
+            mesh2 = object2;
+            scene2.add(mesh2);;
+        });
+
+
+        //var texture = THREE.ImageUtils.loadTexture('../assets/textures/Metro01.JPG');
+        //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+        loader1.load('../assets/models/city.obj', '../assets/models/city.mtl', {side: THREE.DoubleSide});
+        loader2.load('../assets/models/city.obj', '../assets/models/city.mtl', {side: THREE.DoubleSide});
+        //texture.repeat.set( 1 , 1);
+
+
+        function setRandomColors(object, scale) {
+            var children = object.children;
+
+
+            if (children && children.length > 0) {
+                children.forEach(function (e) {
+                    setRandomColors(e, scale)
+                });
+            } else {
+                // no children assume contains a mesh
+                if (object instanceof THREE.Mesh) {
+
+
+                    var height = 0;
+                    var vertices = object.geometry.vertices;
+                    vertices.forEach(function (e) {
+                        if (e.y > height) {
+                            height = e.y;
+                        }
+                    });
+
+                    // 65 is max height of buildings.
+                    object.material.color = new THREE.Color(scale(height / 35).hex());
+                    if (object.material.name.indexOf("building") == 0) {
+                        object.material.transparent = true;
+                        object.material.opacity = 0.8;
+                    }
+                }
+            }
+        }
+
+        /****************************************************************************************************/
+        /****************************************************************************************************/
+        /********************************    FUNCTION TO CONTROL CAMERA     *********************************/
+        /****************************************************************************************************/
+        /****************************************************************************************************/
+
+        $('#defaultslide_LR').slider({ 
+            max: 180,
+            min: -180,
+            value: 0,           
+            slide: function(e,ui) {
+                var offset = $("#currentval_LR").html();
+                var current = ui.value - offset;
+                $('#currentval_LR').html(ui.value);
+                camControls.lon += current;
+            }
+        });
+
+        $('#defaultslide_UD').slider({ 
+            max: 50,
+            min: -180,
+            value: 0,           
+            slide: function(e,ui) {
+                var offset = $("#currentval_UD").html();
+                var current = ui.value - offset;
+                $('#currentva_UD').html(ui.value);
+                camControls.lat += current;
+            }
+        });
+
+        $('#defaultslide_zoom').slider({ 
+                max: 45,
+                min: 0,
+                value: 0,           
+                slide: function(e,ui) {
+                var offset = $("#currentval_zoom").html();
+                var current = ui.value - offset;                
+                $('#currentval_zoom').html(Fov1);  
+                Fov1 += current;            
+            }
+        });
+
+        $('#defaultslide1_LR').slider({ 
+            max: 180,
+            min: -180,
+            value: 0,           
+            slide: function(e,ui) {
+                var offset = $("#currentval1_LR").html();
+                var current = ui.value - offset;
+                $('#currentval1_LR').html(ui.value);
+                cam2Controls.lon += current;
+            }
+        });
+
+        $('#defaultslide1_UD').slider({ 
+            max: 85,
+            min: -85,
+            value: 0,           
+            slide: function(e,ui) {
+                var offset = $("#currentval1_UD").html();
+                var current = ui.value - offset;
+                $('#currentval1_UD').html(ui.value);
+                cam2Controls.lat += current;
+            }
+        });
+        
+ 
+    });
+</script>
+</body>
+</html>

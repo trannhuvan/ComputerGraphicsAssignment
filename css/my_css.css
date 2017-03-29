@@ -1,0 +1,47 @@
+#WebGL-output {
+	float:left;
+	width: 50%;
+}
+#WebGL-output2 {
+	float:left;
+	width: 50% ;
+}
+#Staffproperties{
+	width: 50%;
+	float:left;
+}
+#Camera_Properties {
+	width: 50%;
+	float:left;
+}
+
+.rangetitle {width: 120px; float : left;}
+.rangeslider { float : left; margin: 5px; width : 180px; height: 6px;}
+.rangeslider .ui-slider-handle {
+    -webkit-appearance: none !important;
+    background-color: #FFF;
+    box-shadow:inset 0 0 10px rgba(000,000,000,0.5);
+    border: 1px solid #999;
+    height: 14px;
+    width: 14px;
+}
+.rangeslider .ui-slider-handle:hover{
+	cursor: pointer;
+}
+.slidervalue {
+	padding-left: 10px;
+}
+.lengend {
+	height: 80px;
+}
+.button {
+	width: 90px;
+	margin-top : 5px;
+}
+.button:hover {
+	cursor: pointer;
+}
+.w {
+	float: left;
+	width: 50%;
+}

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Assignment CG</title>
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
+    <script type="text/javascript" src="../libs/stats.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+
+    <script type="text/javascript" src="../libs/OBJLoader.js"></script>
+    <script type="text/javascript" src="../libs/MTLLoader.js"></script>
+    <script type="text/javascript" src="../libs/OBJMTLLoader.js"></script>
+
+    <script type="text/javascript" src="../libs/chroma.js"></script>
+    <script type="text/javascript" src="../libs/RollControls.js"></script>
+   <link rel="stylesheet" type="text/css" href="../css/my_css.css">
+    <style>
+        body{
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body onkeydown ="return myFunction(event)">
+<div id = "Staffproperties">
+	<form name='staff'>
+		 <fieldset>
+		  <legend>Staff properties</legend>
+			<span>Width: <input type="text" id='input_Width'  /></span><br>
+			<span>Height: <input type="text" id='input_Height' /></span><br>
+			<span>RotateX: <input type="text" id='input_RotationZ' /></span><br>
+			<span>RotateY: <input type="text" id='input_RotationX' /></span><br>
+		</fieldset>
+	</form>
+</div>
+<div id = "Camera_Properties">
+	<form name='camera'>
+		 <fieldset>
+		  <legend>Camera Properties </legend>
+			<span>Fov: <input type="text"  id='input_Fov' /></span><br>
+			<span>Ratio: <input type="text" id='input_Ratio'  /></span><br>
+			<span>Near: <input type="text" id='input_Near' /></span><br>
+			<span>Far: <input type="text" id='input_Far' /></span><br>
+		</fieldset>
+	</form>
+</div>
+
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output"></div>
+<div id="WebGL-output2"></div>
+<div id="Stats-output"></div>
+<!-- Javascript code that runs our Three.js examples -->
+
+<script type="text/javascript">
+	var Height=window.innerHeight/2, Width=window.innerWidth/2-2;
+
+	var cameraHeight=50, cameraWidth=0, Fov=130, Ratio=window.innerWidth / window.innerHeight, Near=0.01, Far=1000;
+	var RotationZ=0, RotationX=0;
+	
+    var y = 100;
+	var capture=false;
+	var start=[];
+	var angel = 1;
+
+    // function for presskey to control camera2
+    function myFunction(e){
+        switch (e.keyCode){
+            // case for left arrow
+            case 37 :
+				RotationZ+=5/180*Math.PI;
+            break;
+            // case for up arrow
+            case 38 :
+				if(RotationX<=30/180*Math.PI) RotationX += 5/180*Math.PI;
+            break;
+            // case for right arrow
+            case 39 :
+				RotationZ-=5/180*Math.PI;
+            break;
+            // case for down arrow
+            case 40 :
+				if(RotationX>=-80/180*Math.PI)
+					RotationX -= 5/180*Math.PI;
+            break;
+        }
+        update();
+    }
+	
+	function update(){
+		document.camera.input_Fov.value=Fov;
+		document.camera.input_Ratio.value=Ratio;
+        document.camera.input_Near.value=Near;
+        document.camera.input_Far.value=Far;
+
+		document.staff.input_RotationZ.value=Math.round(RotationZ*180/Math.PI)%180;
+		document.staff.input_RotationX.value=Math.round(RotationX*180/Math.PI)%180;
+		document.staff.input_Width.value=cameraWidth;
+		document.staff.input_Height.value=cameraHeight;
+        
+	}
+    $(function () {
+		update();
+
+        var stats = initStats();
+		var axes1 = new THREE.AxisHelper(100);
+        var scene = new THREE.Scene(), scene2 = new THREE.Scene();
+        
+        var GeneralCamera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 100000);
+        var renderer = new THREE.WebGLRenderer(), renderer2 = new THREE.WebGLRenderer();
+		GeneralCamera.position.set(180*Math.cos(angel), 100, 180*Math.sin(angel));
+        GeneralCamera.up = new THREE.Vector3(0,1,0);			
+		GeneralCamera.lookAt(new THREE.Vector3(0,0,0));			
+        
+        scene2.add(axes1);
+        renderer.setClearColorHex(0xEEEEEE);
+        renderer.setSize(Width, Height*1.53);
+        renderer2.setClearColorHex(0xEEEEEE);
+        renderer2.setSize(Width, Height*1.53);
+
+        /*
+        //create road 1
+        var plane1Geometry = new THREE.PlaneGeometry(1000,1000);
+        var plane1Texture = THREE.ImageUtils.loadTexture("../image/road1.jpg");
+        var plane1Material = new THREE.MeshLambertMaterial({ map: plane1Texture });
+        //var plane1Material = new THREE.MeshLambertMaterial({color: 0xffff00});
+        var plane1 = new THREE.Mesh(plane1Geometry,plane1Material);
+        plane1.rotation.x= -0.5*Math.PI;
+        plane1.position.x=0;
+        plane1.position.y=0;
+        plane1.position.z=0;
+        //scene.add(plane1);*/
+        var axes = new THREE.AxisHelper(100);
+        scene.add(axes);
+        //scene2.add(axes);
+
+        var staffGeometry = new THREE.CubeGeometry(1,1,10);
+        var staffMaterial = new THREE.MeshLambertMaterial({color: 0xffff00});
+        var staff = new THREE.Mesh(staffGeometry, staffMaterial);
+        staff.position.x=5;
+        staff.position.y=0;
+        staff.position.z=10;
+        scene.add(staff);
+		
+        /*
+        //create road 2
+        var plane2Geometry = new THREE.PlaneGeometry(1000,1000);
+        var plane2Texture = THREE.ImageUtils.loadTexture("../image/road1.jpg");
+        var plane2Material = new THREE.MeshLambertMaterial({ map: plane2Texture });
+        //var plane2Material = new THREE.MeshLambertMaterial({color: 0xffff00});
+        var plane2 = new THREE.Mesh(plane2Geometry,plane2Material);
+        
+        plane2.position.x=0;
+        plane2.position.y=0;
+        plane2.position.z=0;
+        plane2.rotation.x = -0.5*Math.PI;
+        //scene2.add(plane2);*/
+
+
+        // create a cube
+        var cubeGeometry = new THREE.CubeGeometry(20,5,1);
+        var cubeTexture = THREE.ImageUtils.loadTexture("ash_uvgrid01.jpg");
+        var cubeMaterial = new THREE.MeshLambertMaterial({ map: cubeTexture });
+        //var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xffff00});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.x=0;
+        cube.position.y=0;
+        cube.position.z= 0;
+        scene.add(cube);
+
+        // create a cube2
+        var cubeGeometry2 = new THREE.CubeGeometry(20,5,1);
+        var cubeTexture2 = THREE.ImageUtils.loadTexture("ash_uvgrid01.jpg");
+        var cubeMaterial2 = new THREE.MeshLambertMaterial({ map: cubeTexture });
+        //var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xffff00});
+        var cube2 = new THREE.Mesh(cubeGeometry2, cubeMaterial2);
+        cube2.position.x=-400;
+        cube2.position.y=-10;
+        cube2.position.z=5;
+        scene2.add(cube2);
+
+        var spotLight = new THREE.SpotLight( 0xffffff );
+        spotLight.position.set( 0, 1000, 1000 );
+        spotLight.castShadow = true;
+        scene.add( spotLight );
+
+        var spotLight2 = new THREE.SpotLight( 0xffffff );
+        spotLight2.position.set( 0, 1000, 1000 );
+        spotLight2.castShadow = true;
+        scene2.add( spotLight2 );
+        $("#WebGL-output").append(renderer.domElement);
+		$("#WebGL-output").on("mousewheel",function(e){
+			if(window.event.wheelDelta>0){
+				angel+=0.05;
+			}
+			else{
+				angel-=0.05;
+			}
+			GeneralCamera.position.set(180*Math.cos(angel), 100, 180*Math.sin(angel));
+			GeneralCamera.up = new THREE.Vector3(0,1,0);
+			GeneralCamera.lookAt(new THREE.Vector3(0,0,0));			
+		});
+
+        $("#WebGL-output2").append(renderer2.domElement);
+		$("#WebGL-output2").on("mousewheel",function(e){
+			if(window.event.wheelDelta>0){
+				if(Fov>25) Fov-=1;
+			}
+			else{
+				if(Fov<150) Fov+=1;
+			}
+			document.camera.input_Fov.value=Fov;
+		});
+		$("#WebGL-output2").on("mousedown", function(e){
+			if(capture){
+				capture=false;
+			}else{
+				capture=true;
+				start = [e.pageX, e.pageY];
+			}
+		});
+		$("#WebGL-output2").on("mousemove",function(e) {
+			if(capture)
+			{
+				var x=e.pageX-start[0];
+				var y=e.pageY-start[1];
+				start = [e.pageX, e.pageY];
+				if(x==0){
+					if(y>0){
+						if(RotationX<=30/180*Math.PI)
+							RotationX+=5/180*Math.PI;
+					}
+					else{
+						if(RotationX>=-80/180*Math.PI)
+							RotationX-=5/180*Math.PI;
+					}
+				}else{
+					if(y==0){
+						if(x>0) RotationZ+=5/180*Math.PI;
+						else RotationZ-=5/180*Math.PI;
+					}
+				}
+				update();
+			}
+		});
+        // speed of cars
+        var step = 2;
+
+        render();
+        // variable to control car
+        var go_to_right = true;
+
+        function render() {
+            stats.update();
+            if (go_to_right == true) {
+                if (cube.position.x <= 490) {
+                    cube.position.x += step;
+		            cube2.position.y += step;
+                }
+                else {
+                    cube.position.z -= 30;
+                    cube2.position.y += 30;
+                    go_to_right = false;
+                }
+            }
+            else {
+                if (cube.position.x >= -490) {
+                    cube.position.x -= step;
+                    cube2.position.y -= step;
+
+                }
+                else {
+                    go_to_right = true;
+                    cube.position.z += 30;
+                    cube2.position.y -= 30;
+                }
+            }
+
+            
+			
+			camera2 = new THREE.PerspectiveCamera(Fov, window.innerWidth / window.innerHeight, 0.1, 100000);
+			camera2.position.x = 100;
+			camera2.position.y = 30/*cameraWidth*/;
+			camera2.position.z = 80/*cameraHeight*/;
+
+            camera2.rotation.y = RotationZ;
+			camera2.rotation.x = RotationX;
+			renderer.render(scene, GeneralCamera);
+			renderer2.render(scene2, camera2);
+            requestAnimationFrame(render);
+        }
+
+        function initStats() {
+
+            var stats = new Stats();
+
+            stats.setMode(0); // 0: fps, 1: ms
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.bottom = '0px';
+
+            $("#Stats-output").append( stats.domElement );
+            return stats;
+        }
+
+
+
+
+        var mesh1;
+        var mesh2;
+
+        var rollControls;
+        var loader1 = new THREE.OBJMTLLoader();
+        var loader2 = new THREE.OBJMTLLoader();
+        loader1.addEventListener('load', function (event) {
+
+            var scale = chroma.scale(['#aaffaa', '#ffff00', '#ffffff']);
+
+            var object = event.content;
+            setRandomColors(object, scale);
+
+            mesh = object;
+            scene.add(mesh);
+            rollControls = new THREE.RollControls(camera);
+
+            rollControls.movementSpeed = 25;
+            rollControls.lookSpeed = 3;
+        });
+
+        loader2.addEventListener('load', function (event) {
+
+            var scale2 = chroma.scale(['#aaffaa', '#ffff00', '#ffffff']);
+
+            var object2 = event.content;
+            setRandomColors(object2, scale2);
+
+            mesh2 = object2;
+            scene2.add(mesh2);;
+        });
+
+
+        //var texture = THREE.ImageUtils.loadTexture('../assets/textures/Metro01.JPG');
+        //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+        loader1.load('../assets/models/city.obj', '../assets/models/city.mtl', {side: THREE.DoubleSide});
+        loader2.load('../assets/models/city.obj', '../assets/models/city.mtl', {side: THREE.DoubleSide});
+        //texture.repeat.set( 1 , 1);
+
+
+        function setRandomColors(object, scale) {
+            var children = object.children;
+
+
+            if (children && children.length > 0) {
+                children.forEach(function (e) {
+                    setRandomColors(e, scale)
+                });
+            } else {
+                // no children assume contains a mesh
+                if (object instanceof THREE.Mesh) {
+
+
+                    var height = 0;
+                    var vertices = object.geometry.vertices;
+                    vertices.forEach(function (e) {
+                        if (e.y > height) {
+                            height = e.y;
+                        }
+                    });
+
+                    // 65 is max height of buildings.
+                    object.material.color = new THREE.Color(scale(height / 35).hex());
+                    if (object.material.name.indexOf("building") == 0) {
+//                        object.material.emissive = new THREE.Color(0x444444);
+                        object.material.transparent = true;
+                        object.material.opacity = 0.8;
+                    }
+                }
+            }
+        }
+
+
+    });
+
+</script>
+</body>
+</html>
